@@ -1,30 +1,46 @@
 import pygame
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED
+from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED
 
 class Player(CircleShape):
-    def __init__ (self, x, y):
+    def __init__(self, x, y):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
 
-    def triangle(self):
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-        a = self.position + forward * self.radius
-        b = self.position - forward * self.radius - right
-        c = self.position - forward * self.radius + right
-        return [a, b, c]
+        # Create the original image with the triangle pointing down
+        size = self.radius * 2
+        self.original_image = pygame.Surface((size, size), pygame.SRCALPHA)
+        center = pygame.Vector2(self.radius, self.radius)
 
-    def draw(self, screen):
-        pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), width=2)
+        # Triangle points relative to the center, pointing down
+        forward = pygame.Vector2(0, 1)
+        right = forward.rotate(90) * self.radius / 1.5
+        a = forward * self.radius
+        b = -forward * self.radius - right
+        c = -forward * self.radius + right
+        points = [a + center, b + center, c + center]
 
-    def rotate(self, dt):
-        self.rotation += PLAYER_TURN_SPEED * dt
+        pygame.draw.polygon(self.original_image, (255, 255, 255), points, width=2)
+
+        self.image = self.original_image
+        self.rect = self.image.get_rect(center=(x, y))
 
     def update(self, dt):
         keys = pygame.key.get_pressed()
-
         if keys[pygame.K_a]:
-            self.rotate(-dt)
+            self.rotation -= PLAYER_TURN_SPEED * dt
         if keys[pygame.K_d]:
-            self.rotate(dt)
+            self.rotation += PLAYER_TURN_SPEED * dt
+
+        if keys[pygame.K_w]:
+            self.move(dt)
+        if keys[pygame.K_s]:
+            self.move(-dt)
+
+        # Rotate the image and update the rect
+        self.image = pygame.transform.rotate(self.original_image, -self.rotation)
+        self.rect = self.image.get_rect(center=self.position)
+
+    def move(self, dt):
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        self.position += forward * PLAYER_SPEED * dt
