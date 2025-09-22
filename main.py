@@ -43,7 +43,10 @@ def main():
                 print("Game over!")
                 return
 
-        pygame.sprite.groupcollide(shots, asteroids, True, True, pygame.sprite.collide_circle)
+        collided_asteroids = pygame.sprite.groupcollide(shots, asteroids, True, False, pygame.sprite.collide_circle)
+        for asteroid_list in collided_asteroids.values():
+            for asteroid in asteroid_list:
+                asteroid.split()
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000
