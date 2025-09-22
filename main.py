@@ -4,6 +4,7 @@ from player import Player
 from asteroidfield import AsteroidField
 from asteroid import Asteroid
 
+
 def main():
     # game boot
     print("Starting Asteroids!")
@@ -27,12 +28,19 @@ def main():
     # game loop
     running = True
     while running == True:
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
         screen.fill((0, 0, 0))
         drawable.draw(screen)
         updatable.update(dt)
+
+        for asteroid in asteroids:
+            if asteroid.collides_with(player):
+                print("Game over!")
+                return
+
         pygame.display.flip()
         dt = clock.tick(60) / 1000
 
